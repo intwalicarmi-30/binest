@@ -2,6 +2,7 @@ import { Bell, LogOut, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TopbarProps {
   role: "admin" | "member";
@@ -26,7 +27,13 @@ const pageTitles: Record<string, string> = {
 export function Topbar({ role }: TopbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut } = useAuth();
   const pageTitle = pageTitles[location.pathname] || "";
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-card/80 backdrop-blur-xl px-4 lg:px-8">
@@ -55,11 +62,8 @@ export function Topbar({ role }: TopbarProps) {
           onClick={() => navigate(role === "admin" ? "/admin" : "/member/notifications")}
         >
           <Bell className="h-4 w-4" />
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full gradient-bg text-[10px] font-bold text-primary-foreground shadow-sm">
-            2
-          </span>
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate("/")}>
+        <Button variant="ghost" size="icon" className="rounded-xl" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
         </Button>
       </div>
