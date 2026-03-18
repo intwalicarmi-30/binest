@@ -1,21 +1,48 @@
 import { Wallet, TrendingUp, Clock, CheckCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { StatCard } from "@/components/shared/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { Progress } from "@/components/ui/progress";
-import { memberDashboardSummary, transactions, notifications, formatCurrency } from "@/data/mockData";
-import type { Transaction } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { getMemberByUserId, getTransactionsByMember, getNotifications, formatCurrency } from "@/services/api";
 
 export default function MemberDashboard() {
-  const summary = memberDashboardSummary;
-  const myTxns = transactions.filter((t) => t.memberId === "m1").slice(0, 5);
-  const unreadNotifs = notifications.filter((n) => !n.read);
-  const progressPct = Math.round((summary.totalPaid / summary.agreedAmount) * 100);
+  const { user, memberId } = useAuth();
 
-  const txnCols: Column<Transaction>[] = [
-    { key: "id", header: "ID", className: "font-mono text-xs" },
-    { key: "amount", header: "Amount", render: (t) => formatCurrency(t.amount) },
+  const { data: member } = useQuery({
+    queryKey: ["myMember", user?.id],
+    queryFn: () => getMemberByUserId(user!.id),
+    enabled: !!user,
+  });
+
+  const { data: myTxns = [] } = useQuery({
+    queryKey: ["myTransactions", memberId],
+    queryFn: () => getTransactionsByMember(memberId!),
+    enabled: !!memberId,
+  });
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["notifications", user?.id],
+    queryFn: () => getNotifications(user!.id),
+    enabled: !!user,
+  });
+
+  const totalPaid = myTxns
+    .filter((t) => t.status === "completed")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+  const agreed = Number(member?.agreed_contribution_amount ?? 0);
+  const remaining = Math.max(0, agreed - totalPaid);
+  const progressPct = agreed > 0 ? Math.round((totalPaid / agreed) * 100) : 0;
+  const status = totalPaid >= agreed && agreed > 0 ? "paid" : totalPaid > 0 ? "partial" : "pending";
+
+  const recentTxns = myTxns.slice(0, 5);
+  const unreadNotifs = notifications.filter((n) => !n.read);
+
+  const txnCols: Column<any>[] = [
+    { key: "id", header: "ID", className: "font-mono text-xs", render: (t) => t.id.slice(0, 8) },
+    { key: "amount", header: "Amount", render: (t) => formatCurrency(Number(t.amount)) },
     { key: "date", header: "Date" },
     { key: "status", header: "Status", render: (t) => <StatusBadge status={t.status} /> },
   ];
@@ -26,35 +53,31 @@ export default function MemberDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="animate-fade-in-up stagger-1">
-          <StatCard title="Agreed Amount" value={formatCurrency(summary.agreedAmount)} icon={Wallet} />
+          <StatCard title="Agreed Amount" value={formatCurrency(agreed)} icon={Wallet} />
         </div>
         <div className="animate-fade-in-up stagger-2">
-          <StatCard title="Total Paid" value={formatCurrency(summary.totalPaid)} icon={CheckCircle} trend={{ value: "100% complete", positive: true }} />
+          <StatCard title="Total Paid" value={formatCurrency(totalPaid)} icon={CheckCircle} trend={agreed > 0 ? { value: `${progressPct}% complete`, positive: true } : undefined} />
         </div>
         <div className="animate-fade-in-up stagger-3">
-          <StatCard title="Remaining" value={formatCurrency(summary.remainingBalance)} icon={Clock} />
+          <StatCard title="Remaining" value={formatCurrency(remaining)} icon={Clock} />
         </div>
         <div className="animate-fade-in-up stagger-4">
-          <StatCard title="Status" value={summary.paymentStatus.charAt(0).toUpperCase() + summary.paymentStatus.slice(1)} icon={TrendingUp} />
+          <StatCard title="Status" value={status.charAt(0).toUpperCase() + status.slice(1)} icon={TrendingUp} />
         </div>
       </div>
 
-      {/* Progress */}
       <div className="stat-card mb-8 space-y-4 animate-fade-in-up stagger-3">
         <div className="flex justify-between items-center">
           <span className="text-sm font-semibold font-display">Contribution Progress</span>
           <span className="text-sm font-bold gradient-text">{progressPct}%</span>
         </div>
-        <div className="relative">
-          <Progress value={progressPct} className="h-3 rounded-full" />
-        </div>
+        <Progress value={progressPct} className="h-3 rounded-full" />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{formatCurrency(summary.totalPaid)} paid</span>
-          <span>{formatCurrency(summary.agreedAmount)} target</span>
+          <span>{formatCurrency(totalPaid)} paid</span>
+          <span>{formatCurrency(agreed)} target</span>
         </div>
       </div>
 
-      {/* Notifications */}
       {unreadNotifs.length > 0 && (
         <div className="mb-8 animate-fade-in-up stagger-4">
           <h2 className="text-lg font-semibold font-display mb-3">Notifications</h2>
@@ -76,11 +99,10 @@ export default function MemberDashboard() {
         </div>
       )}
 
-      {/* Recent transactions */}
       <div className="animate-fade-in-up stagger-5">
         <h2 className="text-lg font-semibold font-display mb-3">Recent Transactions</h2>
         <div className="stat-card !p-0 overflow-hidden">
-          <DataTable columns={txnCols} data={myTxns} emptyMessage="No transactions yet" />
+          <DataTable columns={txnCols} data={recentTxns} emptyMessage="No transactions yet" />
         </div>
       </div>
     </div>

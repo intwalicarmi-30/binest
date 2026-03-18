@@ -1,8 +1,18 @@
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { notifications } from "@/data/mockData";
+import { useAuth } from "@/contexts/AuthContext";
+import { getNotifications } from "@/services/api";
 import { Bell } from "lucide-react";
 
 export default function MemberNotifications() {
+  const { user } = useAuth();
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["notifications", user?.id],
+    queryFn: () => getNotifications(user!.id),
+    enabled: !!user,
+  });
+
   return (
     <div>
       <PageHeader title="Notifications" description="Stay updated on your savings activity" />
@@ -23,7 +33,7 @@ export default function MemberNotifications() {
                   {!n.read && <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">New</span>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">{new Date(n.created_at).toLocaleDateString()}</p>
               </div>
             </div>
           ))}
