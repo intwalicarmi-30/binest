@@ -1,19 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PiggyBank, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check for recovery token in URL hash
+    const hash = window.location.hash;
+    if (!hash.includes("type=recovery")) {
+      // No recovery token, redirect
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirm) {
+      toast.error("Passwords do not match");
+      return;
+    }
     setLoading(true);
-    setTimeout(() => { setDone(true); setLoading(false); }, 800);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      setDone(true);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (done) {
@@ -42,11 +66,11 @@ export default function ResetPassword() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="password">New Password</Label>
-            <Input id="password" type="password" placeholder="••••••••" required />
+            <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm">Confirm Password</Label>
-            <Input id="confirm" type="password" placeholder="••••••••" required />
+            <Input id="confirm" type="password" placeholder="••••••••" required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Updating..." : "Update Password"}

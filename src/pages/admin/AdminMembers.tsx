@@ -1,46 +1,71 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { members, formatCurrency } from "@/data/mockData";
-import type { Member } from "@/types";
+import { getMembersWithBalances, formatCurrency } from "@/services/api";
 import { Search, UserPlus } from "lucide-react";
+
+interface MemberRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  agreed_contribution_amount: number;
+  totalPaid: number;
+  balanceRemaining: number;
+  computedStatus: string;
+}
 
 export default function AdminMembers() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ["membersWithBalances"],
+    queryFn: getMembersWithBalances,
+  });
+
   const filtered = members.filter(
     (m) =>
-      `${m.firstName} ${m.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
+      `${m.first_name} ${m.last_name}`.toLowerCase().includes(search.toLowerCase()) ||
       m.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const columns: Column<Member>[] = [
+  const columns: Column<MemberRow>[] = [
     {
       key: "name",
       header: "Name",
       render: (m) => (
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-            {m.firstName[0]}{m.lastName[0]}
+            {m.first_name[0]}{m.last_name[0]}
           </div>
           <div>
-            <p className="font-medium text-sm">{m.firstName} {m.lastName}</p>
+            <p className="font-medium text-sm">{m.first_name} {m.last_name}</p>
             <p className="text-xs text-muted-foreground">{m.email}</p>
           </div>
         </div>
       ),
     },
-    { key: "phone", header: "Phone" },
-    { key: "agreedContributionAmount", header: "Agreed", render: (m) => formatCurrency(m.agreedContributionAmount) },
+    { key: "phone", header: "Phone", render: (m) => m.phone || "—" },
+    { key: "agreed_contribution_amount", header: "Agreed", render: (m) => formatCurrency(Number(m.agreed_contribution_amount)) },
     { key: "totalPaid", header: "Paid", render: (m) => formatCurrency(m.totalPaid) },
     { key: "balanceRemaining", header: "Balance", render: (m) => formatCurrency(m.balanceRemaining) },
-    { key: "status", header: "Status", render: (m) => <StatusBadge status={m.status} /> },
+    { key: "computedStatus", header: "Status", render: (m) => <StatusBadge status={m.computedStatus as any} /> },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div>

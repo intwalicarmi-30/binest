@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -8,8 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { transactions, formatCurrency } from "@/data/mockData";
-import type { Transaction } from "@/types";
+import { getTransactions, formatCurrency } from "@/services/api";
 import { Search, Download, CalendarIcon, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -17,9 +17,14 @@ import { cn } from "@/lib/utils";
 export default function AdminTransactions() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selected, setSelected] = useState<Transaction | null>(null);
+  const [selected, setSelected] = useState<any | null>(null);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: getTransactions,
+  });
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -30,19 +35,26 @@ export default function AdminTransactions() {
       const matchesTo = !dateTo || txDate <= dateTo;
       return matchesSearch && matchesStatus && matchesFrom && matchesTo;
     });
-  }, [search, statusFilter, dateFrom, dateTo]);
+  }, [transactions, search, statusFilter, dateFrom, dateTo]);
 
   const clearDates = () => { setDateFrom(undefined); setDateTo(undefined); };
 
-  const columns: Column<Transaction>[] = [
-    { key: "id", header: "Transaction ID", className: "font-mono text-xs" },
+  const columns: Column<any>[] = [
+    { key: "id", header: "Transaction ID", className: "font-mono text-xs", render: (t) => t.id.slice(0, 8) },
     { key: "memberName", header: "Member" },
-    { key: "amount", header: "Amount", render: (t) => formatCurrency(t.amount) },
+    { key: "amount", header: "Amount", render: (t) => formatCurrency(Number(t.amount)) },
     { key: "date", header: "Date" },
-    { key: "paymentMethod", header: "Method", render: (t) => <span className="capitalize">{t.paymentMethod.replace("_", " ")}</span> },
-    { key: "enteredBy", header: "Entered By" },
+    { key: "payment_method", header: "Method", render: (t) => <span className="capitalize">{t.payment_method.replace("_", " ")}</span> },
     { key: "status", header: "Status", render: (t) => <StatusBadge status={t.status} /> },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -102,12 +114,11 @@ export default function AdminTransactions() {
           {selected && (
             <div className="space-y-3 text-sm">
               {[
-                ["Transaction ID", selected.id],
+                ["Transaction ID", selected.id.slice(0, 8)],
                 ["Member", selected.memberName],
-                ["Amount", formatCurrency(selected.amount)],
+                ["Amount", formatCurrency(Number(selected.amount))],
                 ["Date", selected.date],
-                ["Method", selected.paymentMethod.replace("_", " ")],
-                ["Entered By", selected.enteredBy],
+                ["Method", selected.payment_method.replace("_", " ")],
                 ["Reference", selected.reference || "—"],
                 ["Notes", selected.notes || "—"],
               ].map(([label, val]) => (

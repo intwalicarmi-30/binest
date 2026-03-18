@@ -1,40 +1,46 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { transactions, formatCurrency } from "@/data/mockData";
-import type { Transaction } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { getTransactionsByMember, formatCurrency } from "@/services/api";
 import { CalendarIcon, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 export default function MemberTransactions() {
-  const [selected, setSelected] = useState<Transaction | null>(null);
+  const { memberId } = useAuth();
+  const [selected, setSelected] = useState<any | null>(null);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
 
+  const { data: allTxns = [] } = useQuery({
+    queryKey: ["myTransactions", memberId],
+    queryFn: () => getTransactionsByMember(memberId!),
+    enabled: !!memberId,
+  });
+
   const myTxns = useMemo(() => {
-    return transactions.filter((t) => {
-      if (t.memberId !== "m1") return false;
+    return allTxns.filter((t) => {
       const txDate = new Date(t.date);
       const matchesFrom = !dateFrom || txDate >= dateFrom;
       const matchesTo = !dateTo || txDate <= dateTo;
       return matchesFrom && matchesTo;
     });
-  }, [dateFrom, dateTo]);
+  }, [allTxns, dateFrom, dateTo]);
 
   const clearDates = () => { setDateFrom(undefined); setDateTo(undefined); };
 
-  const columns: Column<Transaction>[] = [
-    { key: "id", header: "ID", className: "font-mono text-xs" },
-    { key: "amount", header: "Amount", render: (t) => formatCurrency(t.amount) },
+  const columns: Column<any>[] = [
+    { key: "id", header: "ID", className: "font-mono text-xs", render: (t) => t.id.slice(0, 8) },
+    { key: "amount", header: "Amount", render: (t) => formatCurrency(Number(t.amount)) },
     { key: "date", header: "Date" },
-    { key: "paymentMethod", header: "Method", render: (t) => <span className="capitalize">{t.paymentMethod.replace("_", " ")}</span> },
-    { key: "enteredBy", header: "Recorded By" },
+    { key: "payment_method", header: "Method", render: (t) => <span className="capitalize">{t.payment_method.replace("_", " ")}</span> },
     { key: "status", header: "Status", render: (t) => <StatusBadge status={t.status} /> },
   ];
 
@@ -82,11 +88,10 @@ export default function MemberTransactions() {
           {selected && (
             <div className="space-y-3 text-sm">
               {[
-                ["ID", selected.id],
-                ["Amount", formatCurrency(selected.amount)],
+                ["ID", selected.id.slice(0, 8)],
+                ["Amount", formatCurrency(Number(selected.amount))],
                 ["Date", selected.date],
-                ["Method", selected.paymentMethod.replace("_", " ")],
-                ["Recorded By", selected.enteredBy],
+                ["Method", selected.payment_method.replace("_", " ")],
                 ["Reference", selected.reference || "—"],
                 ["Notes", selected.notes || "—"],
               ].map(([label, val]) => (

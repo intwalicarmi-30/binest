@@ -1,18 +1,37 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/button";
-import { members, transactions, formatCurrency } from "@/data/mockData";
-import type { Transaction } from "@/types";
+import { getMemberById, getTransactionsByMember, formatCurrency } from "@/services/api";
 import { ArrowLeft, Mail, Phone, Calendar } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function AdminMemberDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const member = members.find((m) => m.id === id);
+
+  const { data: member, isLoading: memberLoading } = useQuery({
+    queryKey: ["member", id],
+    queryFn: () => getMemberById(id!),
+    enabled: !!id,
+  });
+
+  const { data: memberTxns = [] } = useQuery({
+    queryKey: ["memberTransactions", id],
+    queryFn: () => getTransactionsByMember(id!),
+    enabled: !!id,
+  });
+
+  if (memberLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!member) {
     return (
@@ -23,14 +42,19 @@ export default function AdminMemberDetail() {
     );
   }
 
-  const memberTxns = transactions.filter((t) => t.memberId === member.id);
-  const progressPct = Math.round((member.totalPaid / member.agreedContributionAmount) * 100);
+  const totalPaid = memberTxns
+    .filter((t) => t.status === "completed")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+  const agreed = Number(member.agreed_contribution_amount);
+  const remaining = Math.max(0, agreed - totalPaid);
+  const progressPct = agreed > 0 ? Math.round((totalPaid / agreed) * 100) : 0;
+  const computedStatus = totalPaid >= agreed ? "paid" : totalPaid > 0 ? "partial" : "pending";
 
-  const txnCols: Column<Transaction>[] = [
-    { key: "id", header: "ID", className: "font-mono text-xs" },
-    { key: "amount", header: "Amount", render: (t) => formatCurrency(t.amount) },
+  const txnCols: Column<any>[] = [
+    { key: "id", header: "ID", className: "font-mono text-xs", render: (t) => t.id.slice(0, 8) },
+    { key: "amount", header: "Amount", render: (t) => formatCurrency(Number(t.amount)) },
     { key: "date", header: "Date" },
-    { key: "paymentMethod", header: "Method", render: (t) => t.paymentMethod.replace("_", " ") },
+    { key: "payment_method", header: "Method", render: (t) => <span className="capitalize">{t.payment_method.replace("_", " ")}</span> },
     { key: "status", header: "Status", render: (t) => <StatusBadge status={t.status} /> },
   ];
 
@@ -41,11 +65,10 @@ export default function AdminMemberDetail() {
       </Button>
 
       <PageHeader
-        title={`${member.firstName} ${member.lastName}`}
-        actions={<StatusBadge status={member.status} />}
+        title={`${member.first_name} ${member.last_name}`}
+        actions={<StatusBadge status={computedStatus as any} />}
       />
 
-      {/* Info cards */}
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="stat-card space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Mail className="h-4 w-4" /> Email</div>
@@ -53,19 +76,18 @@ export default function AdminMemberDetail() {
         </div>
         <div className="stat-card space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Phone className="h-4 w-4" /> Phone</div>
-          <p className="font-medium text-sm">{member.phone}</p>
+          <p className="font-medium text-sm">{member.phone || "—"}</p>
         </div>
         <div className="stat-card space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Calendar className="h-4 w-4" /> Joined</div>
-          <p className="font-medium text-sm">{member.joinDate}</p>
+          <p className="font-medium text-sm">{member.join_date}</p>
         </div>
       </div>
 
-      {/* Financial summary */}
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
-        <StatCard title="Agreed Amount" value={formatCurrency(member.agreedContributionAmount)} />
-        <StatCard title="Total Paid" value={formatCurrency(member.totalPaid)} />
-        <StatCard title="Remaining" value={formatCurrency(member.balanceRemaining)} />
+        <StatCard title="Agreed Amount" value={formatCurrency(agreed)} />
+        <StatCard title="Total Paid" value={formatCurrency(totalPaid)} />
+        <StatCard title="Remaining" value={formatCurrency(remaining)} />
       </div>
 
       <div className="stat-card mb-8 space-y-2">
@@ -76,7 +98,6 @@ export default function AdminMemberDetail() {
         <Progress value={progressPct} className="h-2" />
       </div>
 
-      {/* Transaction history */}
       <h2 className="text-lg font-semibold mb-4">Contribution History</h2>
       <DataTable columns={txnCols} data={memberTxns} emptyMessage="No transactions yet" />
     </div>
