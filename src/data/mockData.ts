@@ -40,9 +40,9 @@ export const members: Member[] = [
 ];
 
 export const contributionPlans: ContributionPlan[] = [
-  { id: "cp1", amount: 50000, currency: "NGN", frequency: "monthly", effectiveDate: "2024-06-01", isActive: true, createdBy: "Sarah Okonkwo", createdAt: "2024-05-28", notes: "Increased from ₦40,000" },
-  { id: "cp2", amount: 40000, currency: "NGN", frequency: "monthly", effectiveDate: "2024-03-01", endDate: "2024-05-31", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-02-25", notes: "Initial amount" },
-  { id: "cp3", amount: 30000, currency: "NGN", frequency: "monthly", effectiveDate: "2024-01-01", endDate: "2024-02-28", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-01-01" },
+  { id: "cp1", amount: 50000, currency: "RWF", frequency: "monthly", effectiveDate: "2024-06-01", isActive: true, createdBy: "Sarah Okonkwo", createdAt: "2024-05-28", notes: "Increased from RWF 40,000" },
+  { id: "cp2", amount: 40000, currency: "RWF", frequency: "monthly", effectiveDate: "2024-03-01", endDate: "2024-05-31", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-02-25", notes: "Initial amount" },
+  { id: "cp3", amount: 30000, currency: "RWF", frequency: "monthly", effectiveDate: "2024-01-01", endDate: "2024-02-28", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-01-01" },
 ];
 
 export const transactions: Transaction[] = [
