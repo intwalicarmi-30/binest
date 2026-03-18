@@ -73,7 +73,7 @@ export const adminDashboardSummary: DashboardSummary = {
   fullyPaidCount: 4,
   pendingCount: 2,
   overdueCount: 1,
-  currency: "NGN",
+  currency: "RWF",
 };
 
 export const memberDashboardSummary: MemberDashboardSummary = {
@@ -81,7 +81,7 @@ export const memberDashboardSummary: MemberDashboardSummary = {
   totalPaid: 50000,
   remainingBalance: 0,
   paymentStatus: "paid",
-  currency: "NGN",
+  currency: "RWF",
   nextDueDate: "2024-07-01",
 };
 
