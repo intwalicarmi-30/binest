@@ -10,7 +10,7 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
     <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="page-title">{title}</h1>
+        <h1 className="page-title font-display">{title}</h1>
         {description && <p className="page-description">{description}</p>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
