@@ -58,7 +58,7 @@ export default function AdminSettings() {
           </div>
           <div className="space-y-2">
             <Label>Currency</Label>
-            <Input defaultValue="NGN" disabled />
+            <Input defaultValue="RWF" disabled />
           </div>
           <Button size="sm">Save</Button>
         </div>

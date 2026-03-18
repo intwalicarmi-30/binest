@@ -70,7 +70,7 @@ export default function AdminContributions() {
           ) : (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>New Amount (NGN)</Label>
+                <Label>New Amount (RWF)</Label>
                 <Input type="number" placeholder="50000" defaultValue="50000" />
               </div>
               <div className="space-y-2">

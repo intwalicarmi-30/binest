@@ -51,7 +51,7 @@ export default function AdminAddPayment() {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Amount (NGN)</Label>
+          <Label>Amount (RWF)</Label>
           <Input type="number" placeholder="25000" required />
         </div>
         <div className="space-y-2">

@@ -40,22 +40,22 @@ export const members: Member[] = [
 ];
 
 export const contributionPlans: ContributionPlan[] = [
-  { id: "cp1", amount: 50000, currency: "NGN", frequency: "monthly", effectiveDate: "2024-06-01", isActive: true, createdBy: "Sarah Okonkwo", createdAt: "2024-05-28", notes: "Increased from ₦40,000" },
-  { id: "cp2", amount: 40000, currency: "NGN", frequency: "monthly", effectiveDate: "2024-03-01", endDate: "2024-05-31", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-02-25", notes: "Initial amount" },
-  { id: "cp3", amount: 30000, currency: "NGN", frequency: "monthly", effectiveDate: "2024-01-01", endDate: "2024-02-28", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-01-01" },
+  { id: "cp1", amount: 50000, currency: "RWF", frequency: "monthly", effectiveDate: "2024-06-01", isActive: true, createdBy: "Sarah Okonkwo", createdAt: "2024-05-28", notes: "Increased from RWF 40,000" },
+  { id: "cp2", amount: 40000, currency: "RWF", frequency: "monthly", effectiveDate: "2024-03-01", endDate: "2024-05-31", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-02-25", notes: "Initial amount" },
+  { id: "cp3", amount: 30000, currency: "RWF", frequency: "monthly", effectiveDate: "2024-01-01", endDate: "2024-02-28", isActive: false, createdBy: "Sarah Okonkwo", createdAt: "2024-01-01" },
 ];
 
 export const transactions: Transaction[] = [
-  { id: "TXN-001", memberId: "m1", memberName: "James Adeyemi", amount: 25000, currency: "NGN", date: "2024-06-15", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-001" },
-  { id: "TXN-002", memberId: "m1", memberName: "James Adeyemi", amount: 25000, currency: "NGN", date: "2024-06-28", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-002" },
-  { id: "TXN-003", memberId: "m2", memberName: "Amina Bello", amount: 20000, currency: "NGN", date: "2024-06-10", paymentMethod: "cash", enteredBy: "Sarah Okonkwo", status: "completed", notes: "Paid in cash at meeting" },
-  { id: "TXN-004", memberId: "m2", memberName: "Amina Bello", amount: 15000, currency: "NGN", date: "2024-06-25", paymentMethod: "mobile_money", enteredBy: "Sarah Okonkwo", status: "completed" },
-  { id: "TXN-005", memberId: "m3", memberName: "Chidi Eze", amount: 50000, currency: "NGN", date: "2024-06-05", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-005" },
-  { id: "TXN-006", memberId: "m5", memberName: "David Obi", amount: 25000, currency: "NGN", date: "2024-06-20", paymentMethod: "cash", enteredBy: "Sarah Okonkwo", status: "completed" },
-  { id: "TXN-007", memberId: "m6", memberName: "Grace Nwosu", amount: 50000, currency: "NGN", date: "2024-06-02", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-007" },
-  { id: "TXN-008", memberId: "m7", memberName: "Ibrahim Yusuf", amount: 10000, currency: "NGN", date: "2024-06-18", paymentMethod: "mobile_money", enteredBy: "Sarah Okonkwo", status: "completed" },
-  { id: "TXN-009", memberId: "m8", memberName: "Kemi Afolabi", amount: 50000, currency: "NGN", date: "2024-06-01", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-009" },
-  { id: "TXN-010", memberId: "m5", memberName: "David Obi", amount: 10000, currency: "NGN", date: "2024-07-01", paymentMethod: "cash", enteredBy: "Sarah Okonkwo", status: "pending", notes: "Awaiting confirmation" },
+  { id: "TXN-001", memberId: "m1", memberName: "James Adeyemi", amount: 25000, currency: "RWF", date: "2024-06-15", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-001" },
+  { id: "TXN-002", memberId: "m1", memberName: "James Adeyemi", amount: 25000, currency: "RWF", date: "2024-06-28", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-002" },
+  { id: "TXN-003", memberId: "m2", memberName: "Amina Bello", amount: 20000, currency: "RWF", date: "2024-06-10", paymentMethod: "cash", enteredBy: "Sarah Okonkwo", status: "completed", notes: "Paid in cash at meeting" },
+  { id: "TXN-004", memberId: "m2", memberName: "Amina Bello", amount: 15000, currency: "RWF", date: "2024-06-25", paymentMethod: "mobile_money", enteredBy: "Sarah Okonkwo", status: "completed" },
+  { id: "TXN-005", memberId: "m3", memberName: "Chidi Eze", amount: 50000, currency: "RWF", date: "2024-06-05", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-005" },
+  { id: "TXN-006", memberId: "m5", memberName: "David Obi", amount: 25000, currency: "RWF", date: "2024-06-20", paymentMethod: "cash", enteredBy: "Sarah Okonkwo", status: "completed" },
+  { id: "TXN-007", memberId: "m6", memberName: "Grace Nwosu", amount: 50000, currency: "RWF", date: "2024-06-02", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-007" },
+  { id: "TXN-008", memberId: "m7", memberName: "Ibrahim Yusuf", amount: 10000, currency: "RWF", date: "2024-06-18", paymentMethod: "mobile_money", enteredBy: "Sarah Okonkwo", status: "completed" },
+  { id: "TXN-009", memberId: "m8", memberName: "Kemi Afolabi", amount: 50000, currency: "RWF", date: "2024-06-01", paymentMethod: "bank_transfer", enteredBy: "Sarah Okonkwo", status: "completed", reference: "BT-2024-009" },
+  { id: "TXN-010", memberId: "m5", memberName: "David Obi", amount: 10000, currency: "RWF", date: "2024-07-01", paymentMethod: "cash", enteredBy: "Sarah Okonkwo", status: "pending", notes: "Awaiting confirmation" },
 ];
 
 export const notifications: Notification[] = [
@@ -73,7 +73,7 @@ export const adminDashboardSummary: DashboardSummary = {
   fullyPaidCount: 4,
   pendingCount: 2,
   overdueCount: 1,
-  currency: "NGN",
+  currency: "RWF",
 };
 
 export const memberDashboardSummary: MemberDashboardSummary = {
@@ -81,7 +81,7 @@ export const memberDashboardSummary: MemberDashboardSummary = {
   totalPaid: 50000,
   remainingBalance: 0,
   paymentStatus: "paid",
-  currency: "NGN",
+  currency: "RWF",
   nextDueDate: "2024-07-01",
 };
 
