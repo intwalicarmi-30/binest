@@ -4,15 +4,37 @@ import { PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Signup() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { navigate("/member"); setLoading(false); }, 800);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { first_name: firstName, last_name: lastName },
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      toast.success("Account created! Please check your email to confirm, or sign in if auto-confirmed.");
+      navigate("/login");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create account");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,20 +53,20 @@ export default function Signup() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name</Label>
-              <Input id="firstName" placeholder="James" required />
+              <Input id="firstName" placeholder="James" required value={firstName} onChange={(e) => setFirstName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last name</Label>
-              <Input id="lastName" placeholder="Adeyemi" required />
+              <Input id="lastName" placeholder="Adeyemi" required value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" required />
+            <Input id="email" type="email" placeholder="you@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="••••••••" required />
+            <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}

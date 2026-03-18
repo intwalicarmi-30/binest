@@ -4,6 +4,8 @@ import { PiggyBank, ArrowRight, Shield, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,14 +16,30 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      if (email.includes("admin")) {
-        navigate("/admin");
-      } else {
-        navigate("/member");
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      // Fetch role to redirect correctly
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        if (roleData?.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/member");
+        }
       }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to sign in");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -117,13 +135,6 @@ export default function Login() {
             Don't have an account?{" "}
             <Link to="/signup" className="text-primary hover:text-primary/80 font-semibold transition-colors">Sign up</Link>
           </p>
-
-          <div className="rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground space-y-1.5">
-            <p className="font-semibold text-foreground/70">Demo Credentials</p>
-            <p>Admin: admin@savecollective.com</p>
-            <p>Member: any other email</p>
-            <p>Password: any value</p>
-          </div>
         </div>
       </div>
     </div>
