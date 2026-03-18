@@ -1,25 +1,53 @@
 import { Users, Wallet, AlertTriangle, TrendingUp, PlusCircle, Edit, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { StatCard } from "@/components/shared/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/button";
-import { adminDashboardSummary, transactions, formatCurrency } from "@/data/mockData";
-import type { Transaction } from "@/types";
+import { getAdminDashboardSummary, getTransactions, formatCurrency } from "@/services/api";
+
+interface TransactionRow {
+  id: string;
+  memberName: string;
+  amount: number;
+  date: string;
+  status: string;
+}
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const summary = adminDashboardSummary;
-  const recentTxns = transactions.slice(0, 5);
 
-  const txnColumns: Column<Transaction>[] = [
-    { key: "id", header: "ID", className: "font-mono text-xs" },
+  const { data: summary, isLoading: summaryLoading } = useQuery({
+    queryKey: ["adminDashboard"],
+    queryFn: getAdminDashboardSummary,
+  });
+
+  const { data: allTxns } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: getTransactions,
+  });
+
+  const recentTxns = (allTxns ?? []).slice(0, 5);
+
+  const txnColumns: Column<TransactionRow>[] = [
+    { key: "id", header: "ID", className: "font-mono text-xs", render: (t) => t.id.slice(0, 8) },
     { key: "memberName", header: "Member" },
     { key: "amount", header: "Amount", render: (t) => formatCurrency(t.amount) },
     { key: "date", header: "Date" },
-    { key: "status", header: "Status", render: (t) => <StatusBadge status={t.status} /> },
+    { key: "status", header: "Status", render: (t) => <StatusBadge status={t.status as any} /> },
   ];
+
+  if (summaryLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  const s = summary ?? { total_members: 0, total_expected: 0, total_collected: 0, outstanding: 0, fully_paid_count: 0, pending_count: 0, overdue_count: 0 };
 
   return (
     <div className="animate-fade-in">
@@ -33,28 +61,26 @@ export default function AdminDashboard() {
         }
       />
 
-      {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="animate-fade-in-up stagger-1">
-          <StatCard title="Total Members" value={String(summary.totalMembers)} icon={Users} trend={{ value: "+2 this month", positive: true }} />
+          <StatCard title="Total Members" value={String(s.total_members)} icon={Users} />
         </div>
         <div className="animate-fade-in-up stagger-2">
-          <StatCard title="Expected Total" value={formatCurrency(summary.totalExpectedContributions)} icon={Wallet} />
+          <StatCard title="Expected Total" value={formatCurrency(Number(s.total_expected))} icon={Wallet} />
         </div>
         <div className="animate-fade-in-up stagger-3">
-          <StatCard title="Total Collected" value={formatCurrency(summary.totalCollected)} icon={TrendingUp} subtitle={`${Math.round((summary.totalCollected / summary.totalExpectedContributions) * 100)}% collected`} />
+          <StatCard title="Total Collected" value={formatCurrency(Number(s.total_collected))} icon={TrendingUp} subtitle={s.total_expected > 0 ? `${Math.round((Number(s.total_collected) / Number(s.total_expected)) * 100)}% collected` : undefined} />
         </div>
         <div className="animate-fade-in-up stagger-4">
-          <StatCard title="Outstanding" value={formatCurrency(summary.outstandingBalance)} icon={AlertTriangle} />
+          <StatCard title="Outstanding" value={formatCurrency(Number(s.outstanding))} icon={AlertTriangle} />
         </div>
       </div>
 
-      {/* Status overview */}
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         {[
-          { label: "Fully Paid", count: summary.fullyPaidCount, sub: "Members up to date", colorClass: "bg-success/10 text-success" },
-          { label: "Pending", count: summary.pendingCount, sub: "Awaiting payment", colorClass: "bg-warning/10 text-warning" },
-          { label: "Overdue", count: summary.overdueCount, sub: "Needs follow-up", colorClass: "bg-destructive/10 text-destructive" },
+          { label: "Fully Paid", count: s.fully_paid_count, sub: "Members up to date", colorClass: "bg-success/10 text-success" },
+          { label: "Pending", count: s.pending_count, sub: "Awaiting payment", colorClass: "bg-warning/10 text-warning" },
+          { label: "Overdue", count: s.overdue_count, sub: "Needs follow-up", colorClass: "bg-destructive/10 text-destructive" },
         ].map((item, i) => (
           <div key={item.label} className={`stat-card flex items-center gap-4 animate-fade-in-up stagger-${i + 2}`}>
             <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.colorClass}`}>
@@ -68,7 +94,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Quick actions */}
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         {[
           { icon: PlusCircle, label: "Record Payment", path: "/admin/add-payment" },
@@ -89,7 +114,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Recent Transactions */}
       <div className="animate-fade-in-up stagger-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold font-display">Recent Transactions</h2>
