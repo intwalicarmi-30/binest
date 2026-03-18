@@ -2,6 +2,22 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Progress } from "@/components/ui/progress";
 import { memberDashboardSummary, formatCurrency } from "@/data/mockData";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from "recharts";
+
+const contributionHistory = [
+  { month: "Jan", paid: 0, cumulative: 0 },
+  { month: "Feb", paid: 10000, cumulative: 10000 },
+  { month: "Mar", paid: 10000, cumulative: 20000 },
+  { month: "Apr", paid: 5000, cumulative: 25000 },
+  { month: "May", paid: 0, cumulative: 25000 },
+  { month: "Jun", paid: 25000, cumulative: 50000 },
+];
+
+const chartConfig = {
+  paid: { label: "Monthly Payment", color: "hsl(var(--primary))" },
+  cumulative: { label: "Cumulative", color: "hsl(var(--success))" },
+};
 
 export default function MemberProgress() {
   const summary = memberDashboardSummary;
@@ -11,7 +27,7 @@ export default function MemberProgress() {
     <div>
       <PageHeader title="Contribution Progress" description="Visual overview of your savings journey" />
 
-      <div className="max-w-lg space-y-8">
+      <div className="max-w-2xl space-y-8">
         {/* Main progress */}
         <div className="stat-card space-y-4">
           <div className="flex items-center justify-between">
@@ -38,6 +54,34 @@ export default function MemberProgress() {
               <p className="text-xs text-muted-foreground">Target</p>
             </div>
           </div>
+        </div>
+
+        {/* Cumulative Progress Chart */}
+        <div className="stat-card">
+          <h3 className="font-semibold mb-4">Cumulative Progress</h3>
+          <ChartContainer config={chartConfig} className="h-56 w-full">
+            <LineChart data={contributionHistory}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `₦${v / 1000}k`} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line type="monotone" dataKey="cumulative" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 4 }} animationDuration={800} />
+            </LineChart>
+          </ChartContainer>
+        </div>
+
+        {/* Monthly Payments Bar Chart */}
+        <div className="stat-card">
+          <h3 className="font-semibold mb-4">Monthly Payments</h3>
+          <ChartContainer config={chartConfig} className="h-56 w-full">
+            <BarChart data={contributionHistory}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `₦${v / 1000}k`} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="paid" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} animationDuration={800} />
+            </BarChart>
+          </ChartContainer>
         </div>
 
         {/* Milestones */}
