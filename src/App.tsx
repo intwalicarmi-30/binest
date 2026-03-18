@@ -3,8 +3,31 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+
+import Landing from "./pages/Landing";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminMembers from "./pages/admin/AdminMembers";
+import AdminMemberDetail from "./pages/admin/AdminMemberDetail";
+import AdminTransactions from "./pages/admin/AdminTransactions";
+import AdminContributions from "./pages/admin/AdminContributions";
+import AdminAddPayment from "./pages/admin/AdminAddPayment";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminSettings from "./pages/admin/AdminSettings";
+
+import MemberDashboard from "./pages/member/MemberDashboard";
+import MemberContributions from "./pages/member/MemberContributions";
+import MemberTransactions from "./pages/member/MemberTransactions";
+import MemberProgress from "./pages/member/MemberProgress";
+import MemberNotifications from "./pages/member/MemberNotifications";
+import MemberProfile from "./pages/member/MemberProfile";
+
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +38,35 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Public */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Admin */}
+          <Route path="/admin" element={<DashboardLayout role="admin" />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="members" element={<AdminMembers />} />
+            <Route path="members/:id" element={<AdminMemberDetail />} />
+            <Route path="contributions" element={<AdminContributions />} />
+            <Route path="add-payment" element={<AdminAddPayment />} />
+            <Route path="transactions" element={<AdminTransactions />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+
+          {/* Member */}
+          <Route path="/member" element={<DashboardLayout role="member" />}>
+            <Route index element={<MemberDashboard />} />
+            <Route path="contributions" element={<MemberContributions />} />
+            <Route path="transactions" element={<MemberTransactions />} />
+            <Route path="progress" element={<MemberProgress />} />
+            <Route path="notifications" element={<MemberNotifications />} />
+            <Route path="profile" element={<MemberProfile />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
