@@ -1,14 +1,33 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { format } from "date-fns";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { transactions, formatCurrency } from "@/data/mockData";
 import type { Transaction } from "@/types";
+import { CalendarIcon, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 export default function MemberTransactions() {
-  const myTxns = transactions.filter((t) => t.memberId === "m1");
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+
+  const myTxns = useMemo(() => {
+    return transactions.filter((t) => {
+      if (t.memberId !== "m1") return false;
+      const txDate = new Date(t.date);
+      const matchesFrom = !dateFrom || txDate >= dateFrom;
+      const matchesTo = !dateTo || txDate <= dateTo;
+      return matchesFrom && matchesTo;
+    });
+  }, [dateFrom, dateTo]);
+
+  const clearDates = () => { setDateFrom(undefined); setDateTo(undefined); };
 
   const columns: Column<Transaction>[] = [
     { key: "id", header: "ID", className: "font-mono text-xs" },
@@ -22,7 +41,40 @@ export default function MemberTransactions() {
   return (
     <div>
       <PageHeader title="Transaction History" description="All your recorded transactions" />
-      <DataTable columns={columns} data={myTxns} onRowClick={setSelected} emptyMessage="No transactions yet" />
+
+      <div className="flex flex-wrap gap-3 mb-6">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateTo ? format(dateTo, "MMM d, yyyy") : "To date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+
+        {(dateFrom || dateTo) && (
+          <Button variant="ghost" size="sm" onClick={clearDates} className="gap-1 text-muted-foreground">
+            <X className="h-4 w-4" /> Clear dates
+          </Button>
+        )}
+      </div>
+
+      <DataTable columns={columns} data={myTxns} onRowClick={setSelected} emptyMessage="No transactions yet" pageSize={8} />
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent>

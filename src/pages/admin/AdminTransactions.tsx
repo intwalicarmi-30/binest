@@ -1,25 +1,38 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { format } from "date-fns";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { transactions, formatCurrency } from "@/data/mockData";
-import type { Transaction, TransactionStatus } from "@/types";
-import { Search, Download } from "lucide-react";
+import type { Transaction } from "@/types";
+import { Search, Download, CalendarIcon, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 export default function AdminTransactions() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
-  const filtered = transactions.filter((t) => {
-    const matchesSearch = t.memberName.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || t.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filtered = useMemo(() => {
+    return transactions.filter((t) => {
+      const matchesSearch = t.memberName.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "all" || t.status === statusFilter;
+      const txDate = new Date(t.date);
+      const matchesFrom = !dateFrom || txDate >= dateFrom;
+      const matchesTo = !dateTo || txDate <= dateTo;
+      return matchesSearch && matchesStatus && matchesFrom && matchesTo;
+    });
+  }, [search, statusFilter, dateFrom, dateTo]);
+
+  const clearDates = () => { setDateFrom(undefined); setDateTo(undefined); };
 
   const columns: Column<Transaction>[] = [
     { key: "id", header: "Transaction ID", className: "font-mono text-xs" },
@@ -35,7 +48,7 @@ export default function AdminTransactions() {
     <div>
       <PageHeader title="Transactions" description="All contribution transactions" actions={<Button variant="outline" size="sm" className="gap-1.5"><Download className="h-4 w-4" /> Export</Button>} />
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search by member or ID..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -49,9 +62,39 @@ export default function AdminTransactions() {
             <SelectItem value="failed">Failed</SelectItem>
           </SelectContent>
         </Select>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateTo ? format(dateTo, "MMM d, yyyy") : "To date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+
+        {(dateFrom || dateTo) && (
+          <Button variant="ghost" size="sm" onClick={clearDates} className="gap-1 text-muted-foreground">
+            <X className="h-4 w-4" /> Clear dates
+          </Button>
+        )}
       </div>
 
-      <DataTable columns={columns} data={filtered} onRowClick={setSelected} />
+      <DataTable columns={columns} data={filtered} onRowClick={setSelected} pageSize={8} />
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent>
