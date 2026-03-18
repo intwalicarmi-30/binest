@@ -14,16 +14,260 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contribution_plans: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          effective_date: string
+          end_date: string | null
+          frequency: Database["public"]["Enums"]["contribution_frequency"]
+          id: string
+          is_active: boolean
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          effective_date: string
+          end_date?: string | null
+          frequency?: Database["public"]["Enums"]["contribution_frequency"]
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          effective_date?: string
+          end_date?: string | null
+          frequency?: Database["public"]["Enums"]["contribution_frequency"]
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          agreed_contribution_amount: number
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          join_date: string
+          last_name: string
+          phone: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          agreed_contribution_amount?: number
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          join_date?: string
+          last_name: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          agreed_contribution_amount?: number
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          join_date?: string
+          last_name?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          date: string
+          entered_by: string | null
+          id: string
+          member_id: string
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          reference: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          date?: string
+          entered_by?: string | null
+          id?: string
+          member_id: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          reference?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          date?: string
+          entered_by?: string | null
+          id?: string
+          member_id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          reference?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_admin_dashboard_summary: {
+        Args: never
+        Returns: {
+          fully_paid_count: number
+          outstanding: number
+          overdue_count: number
+          pending_count: number
+          total_collected: number
+          total_expected: number
+          total_members: number
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "member"
+      contribution_frequency: "weekly" | "biweekly" | "monthly" | "quarterly"
+      payment_method:
+        | "cash"
+        | "bank_transfer"
+        | "mobile_money"
+        | "check"
+        | "other"
+      payment_status: "paid" | "pending" | "partial" | "overdue"
+      transaction_status: "completed" | "pending" | "failed" | "reversed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +394,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "member"],
+      contribution_frequency: ["weekly", "biweekly", "monthly", "quarterly"],
+      payment_method: [
+        "cash",
+        "bank_transfer",
+        "mobile_money",
+        "check",
+        "other",
+      ],
+      payment_status: ["paid", "pending", "partial", "overdue"],
+      transaction_status: ["completed", "pending", "failed", "reversed"],
+    },
   },
 } as const
