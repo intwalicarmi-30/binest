@@ -85,6 +85,6 @@ export const memberDashboardSummary: MemberDashboardSummary = {
   nextDueDate: "2024-07-01",
 };
 
-export const formatCurrency = (amount: number, currency = "NGN") => {
-  return new Intl.NumberFormat("en-NG", { style: "currency", currency }).format(amount);
+export const formatCurrency = (amount: number, currency = "RWF") => {
+  return new Intl.NumberFormat("en-RW", { style: "currency", currency }).format(amount);
 };
