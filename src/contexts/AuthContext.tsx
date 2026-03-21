@@ -64,29 +64,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Set up auth listener BEFORE getSession
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
+      (_event, nextSession) => {
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+
+        if (nextSession?.user) {
+          setLoading(true);
           // Use setTimeout to avoid Supabase deadlock
-          setTimeout(() => fetchUserData(session.user.id), 0);
+          setTimeout(async () => {
+            try {
+              await fetchUserData(nextSession.user.id);
+            } finally {
+              setLoading(false);
+            }
+          }, 0);
         } else {
           setProfile(null);
           setRole(null);
           setMemberId(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
+    const initializeSession = async () => {
+      setLoading(true);
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.user) {
+        await fetchUserData(currentSession.user.id);
+      } else {
+        setProfile(null);
+        setRole(null);
+        setMemberId(null);
       }
+
       setLoading(false);
-    });
+    };
+
+    void initializeSession();
 
     return () => subscription.unsubscribe();
   }, []);
