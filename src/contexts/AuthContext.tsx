@@ -48,9 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    setRole(roleData?.role ?? null);
+      .eq("user_id", userId);
+    const roles = roleData?.map((r) => r.role) ?? [];
+    setRole(roles.includes("admin") ? "admin" : roles[0] ?? null);
 
     // Fetch member ID if member
     const { data: memberData } = await supabase
