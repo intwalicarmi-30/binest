@@ -6,18 +6,18 @@ export default function Landing() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: PiggyBank, title: "Collective Savings", desc: "Pool contributions together toward shared financial goals with full transparency." },
-    { icon: Shield, title: "Transparent Tracking", desc: "Every contribution is recorded, timestamped, and visible to all group members." },
-    { icon: Users, title: "Group Management", desc: "Easily manage members, roles, and contribution plans from one dashboard." },
-    { icon: TrendingUp, title: "Progress Insights", desc: "Track collection trends and member payment status at a glance with visual reports." },
-  ];
+  { icon: PiggyBank, title: "Collective Savings", desc: "Pool contributions together toward shared financial goals with full transparency." },
+  { icon: Shield, title: "Transparent Tracking", desc: "Every contribution is recorded, timestamped, and visible to all group members." },
+  { icon: Users, title: "Group Management", desc: "Easily manage members, roles, and contribution plans from one dashboard." },
+  { icon: TrendingUp, title: "Progress Insights", desc: "Track collection trends and member payment status at a glance with visual reports." }];
+
 
   const stats = [
-    { value: "₦2.4B+", label: "Total Saved" },
-    { value: "12,000+", label: "Active Members" },
-    { value: "98%", label: "Collection Rate" },
-    { value: "500+", label: "Savings Groups" },
-  ];
+  { value: "₦2.4B+", label: "Total Saved" },
+  { value: "12,000+", label: "Active Members" },
+  { value: "98%", label: "Collection Rate" },
+  { value: "500+", label: "Savings Groups" }];
+
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -28,7 +28,7 @@ export default function Landing() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-bg shadow-lg glow">
               <PiggyBank className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold tracking-tight font-display">SaveCollective</span>
+            <span className="text-lg font-bold tracking-tight font-display">Binest</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" onClick={() => navigate("/login")} className="text-sm">Log in</Button>
@@ -81,12 +81,12 @@ export default function Landing() {
       <section className="border-y bg-card/50 backdrop-blur-sm">
         <div className="container py-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((s, i) => (
-              <div key={s.label} className={`text-center animate-fade-in-up stagger-${i + 1}`}>
+            {stats.map((s, i) =>
+            <div key={s.label} className={`text-center animate-fade-in-up stagger-${i + 1}`}>
                 <p className="text-2xl sm:text-3xl font-bold font-display gradient-text">{s.value}</p>
                 <p className="text-sm text-muted-foreground mt-1">{s.label}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -98,15 +98,15 @@ export default function Landing() {
           <p className="text-muted-foreground max-w-lg mx-auto">Built for savings groups, cooperatives, and community finance with modern tools.</p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f, i) => (
-            <div key={f.title} className={`stat-card hover-lift space-y-4 animate-fade-in-up stagger-${i + 1}`}>
+          {features.map((f, i) =>
+          <div key={f.title} className={`stat-card hover-lift space-y-4 animate-fade-in-up stagger-${i + 1}`}>
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl gradient-bg shadow-lg glow">
                 <f.icon className="h-6 w-6 text-primary-foreground" />
               </div>
               <h3 className="text-lg font-semibold font-display">{f.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -139,6 +139,6 @@ export default function Landing() {
           <p className="text-sm text-muted-foreground">© 2024 SaveCollective. All rights reserved.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
