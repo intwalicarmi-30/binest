@@ -13,7 +13,7 @@ export default function Landing() {
 
 
   const stats = [
-  { value: "₦2.4B+", label: "Total Saved" },
+  { value: "2.4B+", label: "Total Saved" },
   { value: "12,000+", label: "Active Members" },
   { value: "98%", label: "Collection Rate" },
   { value: "500+", label: "Savings Groups" }];
