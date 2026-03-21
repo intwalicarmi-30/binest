@@ -26,10 +26,11 @@ export default function Login() {
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        
-        if (roleData?.role === "admin") {
+          .eq("user_id", user.id);
+
+        const roles = roleData?.map((r) => r.role) ?? [];
+
+        if (roles.includes("admin")) {
           navigate("/admin");
         } else {
           navigate("/member");
