@@ -29,9 +29,14 @@ export default function AdminAddPayment() {
     queryKey: ["members"],
     queryFn: getMembers,
   });
+  const hasMembers = members.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasMembers) {
+      toast.error("Add at least one member before recording a payment");
+      return;
+    }
     if (!memberId || !amount || !date) {
       toast.error("Please fill in all required fields");
       return;
@@ -88,15 +93,30 @@ export default function AdminAddPayment() {
     <div className="max-w-lg">
       <PageHeader title="Record Payment" description="Manually enter a member's contribution" />
 
+      {!hasMembers && (
+        <div className="mb-5 rounded-lg border bg-muted/40 p-4 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            No members found yet. Add at least one member before recording a payment.
+          </p>
+          <Button type="button" variant="outline" onClick={() => navigate("/admin/members")}>
+            Go to Members
+          </Button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label>Member</Label>
-          <Select value={memberId} onValueChange={setMemberId} required>
+          <Select value={memberId} onValueChange={setMemberId} required disabled={!hasMembers}>
             <SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger>
             <SelectContent>
-              {members.map((m) => (
-                <SelectItem key={m.id} value={m.id}>{m.first_name} {m.last_name}</SelectItem>
-              ))}
+              {hasMembers ? (
+                members.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.first_name} {m.last_name}</SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-members" disabled>No members available</SelectItem>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -131,7 +151,7 @@ export default function AdminAddPayment() {
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={loading}>{loading ? "Saving..." : "Record Payment"}</Button>
+          <Button type="submit" disabled={loading || !hasMembers}>{loading ? "Saving..." : hasMembers ? "Record Payment" : "Add members first"}</Button>
           <Button type="button" variant="outline" onClick={() => navigate("/admin")}>Cancel</Button>
         </div>
       </form>
