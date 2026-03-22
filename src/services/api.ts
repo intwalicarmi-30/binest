@@ -38,6 +38,28 @@ export async function getMemberByUserId(userId: string) {
   return data;
 }
 
+export async function createMember(data: {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  agreed_contribution_amount: number;
+  join_date?: string;
+  status?: "paid" | "pending" | "partial" | "overdue";
+}) {
+  const { data: result, error } = await supabase
+    .from("members")
+    .insert({
+      ...data,
+      status: data.status ?? "pending",
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return result;
+}
+
 // Members with computed balances
 export async function getMembersWithBalances() {
   const { data: members, error: mErr } = await supabase.from("members").select("*").order("first_name");
