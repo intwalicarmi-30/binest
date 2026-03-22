@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getMembersWithBalances, formatCurrency } from "@/services/api";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface MemberRow {
@@ -32,6 +33,8 @@ export default function AdminMembers() {
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<MemberRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -74,7 +77,48 @@ export default function AdminMembers() {
     { key: "totalPaid", header: "Paid", render: (m) => formatCurrency(m.totalPaid) },
     { key: "balanceRemaining", header: "Balance", render: (m) => formatCurrency(m.balanceRemaining) },
     { key: "computedStatus", header: "Status", render: (m) => <StatusBadge status={m.computedStatus as any} /> },
+    {
+      key: "actions",
+      header: "",
+      render: (m) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteTarget(m);
+          }}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      ),
+    },
   ];
+
+  const handleDeleteMember = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-member", {
+        body: { member_id: deleteTarget.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["membersWithBalances"] }),
+        queryClient.invalidateQueries({ queryKey: ["members"] }),
+        queryClient.invalidateQueries({ queryKey: ["adminDashboard"] }),
+      ]);
+      toast.success(`${deleteTarget.first_name} ${deleteTarget.last_name} has been removed`);
+      setDeleteTarget(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete member");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,6 +196,27 @@ export default function AdminMembers() {
         <Input placeholder="Search members..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
       <DataTable columns={columns} data={filtered} onRowClick={(m) => navigate(`/admin/members/${m.id}`)} />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete member?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove <strong>{deleteTarget?.first_name} {deleteTarget?.last_name}</strong>, their account, and all their transactions. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteMember}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete Member"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md">

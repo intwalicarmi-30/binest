@@ -129,6 +129,11 @@ export async function createTransaction(data: {
   return result;
 }
 
+export async function deleteTransaction(id: string) {
+  const { error } = await supabase.from("transactions").delete().eq("id", id);
+  if (error) throw error;
+}
+
 // Contribution Plans
 export async function getContributionPlans() {
   const { data, error } = await supabase
