@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getMembersWithBalances, formatCurrency, createMember } from "@/services/api";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getMembersWithBalances, formatCurrency } from "@/services/api";
+import { supabase } from "@/integrations/supabase/client";
 import { Search, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -36,6 +38,8 @@ export default function AdminMembers() {
     email: "",
     phone: "",
     agreed_contribution_amount: "50000",
+    password: "",
+    role: "member" as "admin" | "member",
   });
 
   const { data: members = [], isLoading } = useQuery({
@@ -86,15 +90,27 @@ export default function AdminMembers() {
       return;
     }
 
+    if (form.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
     setSaving(true);
     try {
-      await createMember({
-        first_name: form.first_name.trim(),
-        last_name: form.last_name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim() || undefined,
-        agreed_contribution_amount: amount,
+      const { data, error } = await supabase.functions.invoke("create-member", {
+        body: {
+          first_name: form.first_name.trim(),
+          last_name: form.last_name.trim(),
+          email: form.email.trim(),
+          password: form.password,
+          phone: form.phone.trim() || undefined,
+          agreed_contribution_amount: amount,
+          role: form.role,
+        },
       });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["membersWithBalances"] }),
@@ -110,6 +126,8 @@ export default function AdminMembers() {
         email: "",
         phone: "",
         agreed_contribution_amount: "50000",
+        password: "",
+        role: "member",
       });
     } catch (error: any) {
       toast.error(error.message || "Failed to add member");
@@ -182,6 +200,35 @@ export default function AdminMembers() {
                 value={form.phone}
                 onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Min 6 characters"
+                value={form.password}
+                onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                required
+                minLength={6}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select
+                value={form.role}
+                onValueChange={(val) => setForm((prev) => ({ ...prev, role: val as "admin" | "member" }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
