@@ -16,6 +16,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+function exportToCsv(data: any[], filename: string) {
+  if (!data.length) { toast.error("No data to export"); return; }
+  const headers = ["Transaction ID", "Member", "Amount", "Date", "Method", "Status", "Reference", "Notes"];
+  const rows = data.map(t => [
+    t.id, t.memberName, t.amount, t.date,
+    t.payment_method?.replace("_", " "), t.status,
+    t.reference || "", t.notes || "",
+  ]);
+  const csv = [headers, ...rows].map(r => r.map((v: string) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${data.length} transactions`);
+}
+
 export default function AdminTransactions() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
