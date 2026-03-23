@@ -9,9 +9,25 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
 import { getTransactionsByMember, formatCurrency } from "@/services/api";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, X, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+function exportToCsv(data: any[], filename: string) {
+  if (!data.length) { toast.error("No data to export"); return; }
+  const headers = ["ID", "Amount", "Date", "Method", "Status", "Reference", "Notes"];
+  const rows = data.map(t => [
+    t.id, t.amount, t.date, t.payment_method?.replace("_", " "),
+    t.status, t.reference || "", t.notes || "",
+  ]);
+  const csv = [headers, ...rows].map(r => r.map((v: string) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${data.length} transactions`);
+}
 
 export default function MemberTransactions() {
   const { memberId } = useAuth();
@@ -46,7 +62,7 @@ export default function MemberTransactions() {
 
   return (
     <div>
-      <PageHeader title="Transaction History" description="All your recorded transactions" />
+      <PageHeader title="Transaction History" description="All your recorded transactions" actions={<Button variant="outline" size="sm" className="gap-1.5" onClick={() => exportToCsv(myTxns, `my-transactions-${format(new Date(), "yyyy-MM-dd")}.csv`)}><Download className="h-4 w-4" /> Export</Button>} />
 
       <div className="flex flex-wrap gap-3 mb-6">
         <Popover>
