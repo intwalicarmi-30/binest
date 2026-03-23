@@ -95,12 +95,13 @@ export default function AdminSettings() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Organization</h2>
           <div className="space-y-2">
             <Label>Organization Name</Label>
-            <Input defaultValue="SaveCollective Group" />
+            <Input value={orgName} onChange={(e) => setOrgName(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Currency</Label>
             <Input defaultValue="RWF" disabled />
           </div>
+          <Button size="sm" onClick={() => { setSavingOrg(true); localStorage.setItem("org_name", orgName); toast.success("Organization updated"); setSavingOrg(false); }} disabled={savingOrg}>{savingOrg ? "Saving..." : "Save Organization"}</Button>
         </div>
       </div>
     </div>
