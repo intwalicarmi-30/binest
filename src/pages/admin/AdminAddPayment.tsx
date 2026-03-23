@@ -126,7 +126,7 @@ export default function AdminAddPayment() {
         </div>
         <div className="space-y-2">
           <Label>Payment Date</Label>
-          <Input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input type="date" required value={date} onChange={(e) => setDate(e.target.value)} max={new Date().toISOString().split("T")[0]} />
         </div>
         <div className="space-y-2">
           <Label>Payment Method</Label>
