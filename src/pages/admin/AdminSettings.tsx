@@ -15,6 +15,8 @@ export default function AdminSettings() {
   const [lastName, setLastName] = useState(profile?.last_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [saving, setSaving] = useState(false);
+  const [orgName, setOrgName] = useState(() => localStorage.getItem("org_name") ?? "SaveCollective Group");
+  const [savingOrg, setSavingOrg] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [updatingPw, setUpdatingPw] = useState(false);
