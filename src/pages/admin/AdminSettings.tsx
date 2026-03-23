@@ -15,6 +15,8 @@ export default function AdminSettings() {
   const [lastName, setLastName] = useState(profile?.last_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [saving, setSaving] = useState(false);
+  const [orgName, setOrgName] = useState(() => localStorage.getItem("org_name") ?? "SaveCollective Group");
+  const [savingOrg, setSavingOrg] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [updatingPw, setUpdatingPw] = useState(false);
@@ -93,12 +95,13 @@ export default function AdminSettings() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Organization</h2>
           <div className="space-y-2">
             <Label>Organization Name</Label>
-            <Input defaultValue="SaveCollective Group" />
+            <Input value={orgName} onChange={(e) => setOrgName(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Currency</Label>
             <Input defaultValue="RWF" disabled />
           </div>
+          <Button size="sm" onClick={() => { setSavingOrg(true); localStorage.setItem("org_name", orgName); toast.success("Organization updated"); setSavingOrg(false); }} disabled={savingOrg}>{savingOrg ? "Saving..." : "Save Organization"}</Button>
         </div>
       </div>
     </div>
