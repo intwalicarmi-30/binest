@@ -86,7 +86,7 @@ export default function Login() {
               <div className="flex h-11 w-11 items-center justify-center rounded-xl gradient-bg shadow-lg glow">
                 <PiggyBank className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold font-display lg:hidden">SaveCollective</span>
+              <span className="text-lg font-bold font-display lg:hidden">Binest</span>
             </Link>
             <h1 className="text-2xl font-bold font-display pt-2">Welcome back</h1>
             <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
