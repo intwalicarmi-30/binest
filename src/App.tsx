@@ -26,6 +26,7 @@ import MemberDashboard from "./pages/member/MemberDashboard";
 import MemberContributions from "./pages/member/MemberContributions";
 import MemberTransactions from "./pages/member/MemberTransactions";
 import MemberProgress from "./pages/member/MemberProgress";
+import MemberReports from "./pages/member/MemberReports";
 import MemberNotifications from "./pages/member/MemberNotifications";
 import MemberProfile from "./pages/member/MemberProfile";
 
