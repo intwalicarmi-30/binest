@@ -116,7 +116,7 @@ export default function AdminTransactions() {
 
   return (
     <div>
-      <PageHeader title="Transactions" description="All contribution transactions" actions={<Button variant="outline" size="sm" className="gap-1.5"><Download className="h-4 w-4" /> Export</Button>} />
+      <PageHeader title="Transactions" description="All contribution transactions" actions={<Button variant="outline" size="sm" className="gap-1.5" onClick={() => exportToCsv(filtered, `transactions-${format(new Date(), "yyyy-MM-dd")}.csv`)}><Download className="h-4 w-4" /> Export</Button>} />
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 max-w-sm">
