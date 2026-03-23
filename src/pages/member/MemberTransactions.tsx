@@ -62,7 +62,7 @@ export default function MemberTransactions() {
 
   return (
     <div>
-      <PageHeader title="Transaction History" description="All your recorded transactions" />
+      <PageHeader title="Transaction History" description="All your recorded transactions" actions={<Button variant="outline" size="sm" className="gap-1.5" onClick={() => exportToCsv(myTxns, `my-transactions-${format(new Date(), "yyyy-MM-dd")}.csv`)}><Download className="h-4 w-4" /> Export</Button>} />
 
       <div className="flex flex-wrap gap-3 mb-6">
         <Popover>
