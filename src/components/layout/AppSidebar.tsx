@@ -27,6 +27,7 @@ const memberNav: NavItem[] = [
   { label: "My Contributions", path: "/member/contributions", icon: Wallet },
   { label: "Transactions", path: "/member/transactions", icon: ArrowLeftRight },
   { label: "Progress", path: "/member/progress", icon: TrendingUp },
+  { label: "Reports", path: "/member/reports", icon: BarChart3 },
   { label: "Notifications", path: "/member/notifications", icon: Bell },
   { label: "Profile", path: "/member/profile", icon: User },
 ];

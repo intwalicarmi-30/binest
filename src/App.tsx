@@ -26,6 +26,7 @@ import MemberDashboard from "./pages/member/MemberDashboard";
 import MemberContributions from "./pages/member/MemberContributions";
 import MemberTransactions from "./pages/member/MemberTransactions";
 import MemberProgress from "./pages/member/MemberProgress";
+import MemberReports from "./pages/member/MemberReports";
 import MemberNotifications from "./pages/member/MemberNotifications";
 import MemberProfile from "./pages/member/MemberProfile";
 
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="contributions" element={<MemberContributions />} />
               <Route path="transactions" element={<MemberTransactions />} />
               <Route path="progress" element={<MemberProgress />} />
+              <Route path="reports" element={<MemberReports />} />
               <Route path="notifications" element={<MemberNotifications />} />
               <Route path="profile" element={<MemberProfile />} />
             </Route>
