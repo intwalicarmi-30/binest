@@ -119,7 +119,7 @@ export default function Landing() {
           </div>
           <div className="container relative text-center space-y-6">
             <h2 className="text-3xl sm:text-4xl font-bold font-display">Ready to start saving together?</h2>
-            <p className="text-white/70 max-w-lg mx-auto">Join thousands of savings groups already using SaveCollective to manage their finances.</p>
+            <p className="text-white/70 max-w-lg mx-auto">Join thousands of savings groups already using Binest to manage their finances.</p>
             <Button size="lg" onClick={() => navigate("/signup")} className="bg-white text-foreground hover:bg-white/90 shadow-xl gap-2 text-base px-8 h-12 mt-4">
               Create Your Group <ArrowRight className="h-4 w-4" />
             </Button>
