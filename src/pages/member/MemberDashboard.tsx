@@ -78,7 +78,7 @@ export default function MemberDashboard() {
         <Progress value={progressPct} className="h-3 rounded-full" />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{formatCurrency(totalPaid)} paid</span>
-          <span>{formatCurrency(agreed)} target</span>
+          <span>{formatCurrency(annualTarget)} annual target</span>
         </div>
       </div>
 
