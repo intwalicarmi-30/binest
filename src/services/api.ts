@@ -4,6 +4,21 @@ export const formatCurrency = (amount: number, currency = "RWF") => {
   return new Intl.NumberFormat("en-RW", { style: "currency", currency }).format(amount);
 };
 
+// Cycle helper: April 1 – March 31
+export function getCurrentCycleDates() {
+  const now = new Date();
+  const year = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1; // April = month 3
+  const cycleStart = `${year}-04-01`;
+  const cycleEnd = `${year + 1}-03-31`;
+  const monthsElapsed = now.getMonth() >= 3
+    ? now.getMonth() - 3 + 1
+    : now.getMonth() + 9 + 1;
+  return { cycleStart, cycleEnd, monthsElapsed, cycleYear: year };
+}
+
+export const MONTHLY_CONTRIBUTION = 50000;
+export const CYCLE_MONTHS = 12;
+
 // Admin Dashboard Summary
 export async function getAdminDashboardSummary() {
   const { data, error } = await supabase.rpc("get_admin_dashboard_summary");
