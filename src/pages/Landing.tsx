@@ -134,9 +134,9 @@ export default function Landing() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-bg">
               <PiggyBank className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-sm font-bold font-display">SaveCollective</span>
+            <span className="text-sm font-bold font-display">Binest</span>
           </div>
-          <p className="text-sm text-muted-foreground">© 2024 SaveCollective. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2026 Binest. All rights reserved.</p>
         </div>
       </footer>
     </div>);
