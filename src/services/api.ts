@@ -4,6 +4,21 @@ export const formatCurrency = (amount: number, currency = "RWF") => {
   return new Intl.NumberFormat("en-RW", { style: "currency", currency }).format(amount);
 };
 
+// Cycle helper: April 1 – March 31
+export function getCurrentCycleDates() {
+  const now = new Date();
+  const year = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1; // April = month 3
+  const cycleStart = `${year}-04-01`;
+  const cycleEnd = `${year + 1}-03-31`;
+  const monthsElapsed = now.getMonth() >= 3
+    ? now.getMonth() - 3 + 1
+    : now.getMonth() + 9 + 1;
+  return { cycleStart, cycleEnd, monthsElapsed, cycleYear: year };
+}
+
+export const MONTHLY_CONTRIBUTION = 50000;
+export const CYCLE_MONTHS = 12;
+
 // Admin Dashboard Summary
 export async function getAdminDashboardSummary() {
   const { data, error } = await supabase.rpc("get_admin_dashboard_summary");
@@ -60,27 +75,32 @@ export async function createMember(data: {
   return result;
 }
 
-// Members with computed balances
+// Members with computed balances (cycle-aware: April–March, 50k/month)
 export async function getMembersWithBalances() {
+  const { cycleStart, cycleEnd, monthsElapsed } = getCurrentCycleDates();
+
   const { data: members, error: mErr } = await supabase.from("members").select("*").order("first_name");
   if (mErr) throw mErr;
   
   const { data: txns, error: tErr } = await supabase
     .from("transactions")
-    .select("member_id, amount, status");
+    .select("member_id, amount, status, date")
+    .gte("date", cycleStart)
+    .lte("date", cycleEnd);
   if (tErr) throw tErr;
 
   return (members ?? []).map((m) => {
-    const totalPaid = (txns ?? [])
-      .filter((t) => t.member_id === m.id && t.status === "completed")
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    const remaining = Math.max(0, Number(m.agreed_contribution_amount) - totalPaid);
-    const computedStatus = totalPaid >= Number(m.agreed_contribution_amount)
+    const cycleTxns = (txns ?? []).filter((t) => t.member_id === m.id && t.status === "completed");
+    const totalPaid = cycleTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+    const expectedSoFar = MONTHLY_CONTRIBUTION * monthsElapsed;
+    const annualTarget = MONTHLY_CONTRIBUTION * CYCLE_MONTHS;
+    const remaining = Math.max(0, annualTarget - totalPaid);
+    const computedStatus = totalPaid >= expectedSoFar
       ? "paid"
       : totalPaid > 0
       ? "partial"
       : "pending";
-    return { ...m, totalPaid, balanceRemaining: remaining, computedStatus };
+    return { ...m, totalPaid, balanceRemaining: remaining, computedStatus, expectedSoFar, annualTarget, monthsElapsed };
   });
 }
 

@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
-import { getMemberByUserId, getTransactionsByMember, getNotifications, formatCurrency } from "@/services/api";
+import { getMemberByUserId, getTransactionsByMember, getNotifications, formatCurrency, getCurrentCycleDates, MONTHLY_CONTRIBUTION, CYCLE_MONTHS } from "@/services/api";
 
 export default function MemberDashboard() {
   const { user, memberId } = useAuth();
@@ -29,13 +29,17 @@ export default function MemberDashboard() {
     enabled: !!user,
   });
 
-  const totalPaid = myTxns
-    .filter((t) => t.status === "completed")
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-  const agreed = Number(member?.agreed_contribution_amount ?? 0);
-  const remaining = Math.max(0, agreed - totalPaid);
-  const progressPct = agreed > 0 ? Math.round((totalPaid / agreed) * 100) : 0;
-  const status = totalPaid >= agreed && agreed > 0 ? "paid" : totalPaid > 0 ? "partial" : "pending";
+  const { cycleStart, cycleEnd, monthsElapsed } = getCurrentCycleDates();
+  const annualTarget = MONTHLY_CONTRIBUTION * CYCLE_MONTHS;
+  const expectedSoFar = MONTHLY_CONTRIBUTION * monthsElapsed;
+
+  const cycleTxns = myTxns.filter(
+    (t) => t.status === "completed" && t.date >= cycleStart && t.date <= cycleEnd
+  );
+  const totalPaid = cycleTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+  const remaining = Math.max(0, annualTarget - totalPaid);
+  const progressPct = annualTarget > 0 ? Math.min(100, Math.round((totalPaid / annualTarget) * 100)) : 0;
+  const status = totalPaid >= expectedSoFar ? "paid" : totalPaid > 0 ? "partial" : "pending";
 
   const recentTxns = myTxns.slice(0, 5);
   const unreadNotifs = notifications.filter((n) => !n.read);
@@ -53,10 +57,10 @@ export default function MemberDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="animate-fade-in-up stagger-1">
-          <StatCard title="Agreed Amount" value={formatCurrency(agreed)} icon={Wallet} />
+          <StatCard title="Monthly Target" value={formatCurrency(MONTHLY_CONTRIBUTION)} icon={Wallet} subtitle={`Month ${monthsElapsed} of ${CYCLE_MONTHS}`} />
         </div>
         <div className="animate-fade-in-up stagger-2">
-          <StatCard title="Total Paid" value={formatCurrency(totalPaid)} icon={CheckCircle} trend={agreed > 0 ? { value: `${progressPct}% complete`, positive: true } : undefined} />
+          <StatCard title="Total Paid (Cycle)" value={formatCurrency(totalPaid)} icon={CheckCircle} trend={annualTarget > 0 ? { value: `${progressPct}% of annual`, positive: true } : undefined} />
         </div>
         <div className="animate-fade-in-up stagger-3">
           <StatCard title="Remaining" value={formatCurrency(remaining)} icon={Clock} />
@@ -74,7 +78,7 @@ export default function MemberDashboard() {
         <Progress value={progressPct} className="h-3 rounded-full" />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{formatCurrency(totalPaid)} paid</span>
-          <span>{formatCurrency(agreed)} target</span>
+          <span>{formatCurrency(annualTarget)} annual target</span>
         </div>
       </div>
 
