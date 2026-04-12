@@ -75,27 +75,32 @@ export async function createMember(data: {
   return result;
 }
 
-// Members with computed balances
+// Members with computed balances (cycle-aware: April–March, 50k/month)
 export async function getMembersWithBalances() {
+  const { cycleStart, cycleEnd, monthsElapsed } = getCurrentCycleDates();
+
   const { data: members, error: mErr } = await supabase.from("members").select("*").order("first_name");
   if (mErr) throw mErr;
   
   const { data: txns, error: tErr } = await supabase
     .from("transactions")
-    .select("member_id, amount, status");
+    .select("member_id, amount, status, date")
+    .gte("date", cycleStart)
+    .lte("date", cycleEnd);
   if (tErr) throw tErr;
 
   return (members ?? []).map((m) => {
-    const totalPaid = (txns ?? [])
-      .filter((t) => t.member_id === m.id && t.status === "completed")
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    const remaining = Math.max(0, Number(m.agreed_contribution_amount) - totalPaid);
-    const computedStatus = totalPaid >= Number(m.agreed_contribution_amount)
+    const cycleTxns = (txns ?? []).filter((t) => t.member_id === m.id && t.status === "completed");
+    const totalPaid = cycleTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+    const expectedSoFar = MONTHLY_CONTRIBUTION * monthsElapsed;
+    const annualTarget = MONTHLY_CONTRIBUTION * CYCLE_MONTHS;
+    const remaining = Math.max(0, annualTarget - totalPaid);
+    const computedStatus = totalPaid >= expectedSoFar
       ? "paid"
       : totalPaid > 0
       ? "partial"
       : "pending";
-    return { ...m, totalPaid, balanceRemaining: remaining, computedStatus };
+    return { ...m, totalPaid, balanceRemaining: remaining, computedStatus, expectedSoFar, annualTarget, monthsElapsed };
   });
 }
 
